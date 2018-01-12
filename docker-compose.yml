@@ -1,0 +1,17 @@
+version: "2"
+
+services:
+  srv:
+    build: .
+    command: ${SRV_COMMAND}
+    environment:
+      - DEBUG=${DEBUG}
+      - DB_URI=${DB_URI}
+      - PROJECT_ROOT=${PROJECT_ROOT}
+      - SERVER_HOST=${SRV_HOST}
+      - SERVER_PORT=${SRV_PORT}
+    ports:
+      - "${SRV_PORT}:${SRV_PORT}"
+    volumes:
+      - .:${PROJECT_ROOT}
+    working_dir: ${PROJECT_ROOT}
