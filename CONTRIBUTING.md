@@ -1,7 +1,7 @@
 # Contributing
-You are here to help on **bitrix24-python3-client**? Awesome, feel welcome and read the following sections to know what and how to work on something. 
+You are here to help on **SQLAlchemy DST**? Awesome, feel welcome and read the following sections to know what and how to work on something. 
 
-It's an open source project and we love to receive contributions from our community — you! There are many ways to contribute, from writing tutorials or blog posts, improving the documentation, submitting bug reports and feature requests or writing code which can be incorporated into **bitrix24-python3-client** itself.
+It's an open source project and we love to receive contributions from our community — you! There are many ways to contribute, from writing tutorials or blog posts, improving the documentation, submitting bug reports and feature requests or writing code which can be incorporated into **SQLAlchemy DST** itself.
 
 ## Code of Conduct
 All members of our community are expected to follow our [Code of Conduct](https://github.com/yarbshk/sqlalchemy-dst/blob/master/CODE_OF_CONDUCT.md). Please make sure you are welcoming and friendly in all of our spaces.
@@ -10,7 +10,7 @@ All members of our community are expected to follow our [Code of Conduct](https:
 Before you submit an issue, please **search the issue tracker**, maybe an issue for your problem already exists and the discussion might inform you of workarounds readily available.
 
 We want to fix all the issues as soon as possible, but before fixing a bug we need to reproduce and confirm it. In order to reproduce bugs we ask you to **provide a minimal reproduction scenario** that include:
-- Version of the client used.
+- Version of the module used.
 - Environment information (3rd-party libraries, technology stack etc.).
 - **A use-case that fails!**
 
