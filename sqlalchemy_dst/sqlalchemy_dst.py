@@ -47,11 +47,13 @@ def row2dict(row, depth=None, exclude=None, exclude_pk=None,
 
     :return: dict with attributes of current depth level
     """
-    if not depth:
+    if depth == 0:
         return None
     d, mapper = {}, get_mapper(row)
     if not isinstance(depth, int):
-        depth = getattr(row, ATTR_DEPTH, DEFAULT_DEPTH)
+        depth = getattr(row, ATTR_DEPTH, DEFAULT_DEPTH) - 1
+    else:
+        depth -= 1
     if not isinstance(exclude, list):
         exclude = getattr(row, ATTR_EXCLUDE, DEFAULT_EXCLUDE)
     if exclude_pk is None:
