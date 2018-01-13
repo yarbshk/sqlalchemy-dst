@@ -23,7 +23,7 @@ SQLAlchemy DST use only two functions (`row2dict()` and `dict2row()`) for serial
 
 Imagine you have a User model with several relations (Role, Permissions), most likely, you will want to store instance of the model in a web server session for efficency purposes. Unfortunatelly, it's not possible to store instances of Python classes in the session. So, you need to **serialize** one **into a dictionary** first:
 ```python
->>> from sqlalchemy_dst import row2dict
+>>> from sqlalchemy_dst import dict2row, row2dict
 >>> from tests.main import db
 >>> from tests.schema import Permission, Role, User
 >>> user = db.session.query(User).first()
@@ -123,6 +123,8 @@ class User(db.Model):
     _sa_dst_rel = {'role': Role}
     ...
 ```
+...then taste the changes:
+
 ```python
 >>> from tests.main import db
 >>> from tests.schema import User
