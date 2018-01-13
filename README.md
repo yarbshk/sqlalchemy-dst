@@ -30,26 +30,25 @@ Imagine you have a User model with several relations (Role, Permissions), most l
 ```
 Basic usage (one-dimensional dictionary):
 ```python
->>> row2dict(user)
+>>> user_dict = row2dict(user)
 {'password': 'x', '_secret': 'x', 'id': 1, 'role': None, 'role_id': 1, 'username': 'yarbshk'}
 ```
 Advanced usage (three-dimensional dictionary without specific columns)
 ```python
 
->>> row2dict(user, depth=3, exclude_pk=True, exclude_underscore=True)
+>>> user_dict = row2dict(user, depth=3, exclude_pk=True, exclude_underscore=True)
 {'password': 'x', 'role': {'description': None, 'permissions': [{'name': 'posts:r', 'roles': [], 'id': 1}, {'name': 'posts:w', 'roles': [], 'id': 2}], 'users': [{'password': 'x', 'role': None, 'username': 'yarbshk', 'id': 1}], 'name': 'Moderator', 'id': 1}, 'username': 'yarbshk', 'id': 1}
 ```
 Cheated usage (completely "clean" three-dimensional dictionary)
 ```python
 >>> user_dict = row2dict(user, depth=3, exclude=['roles', 'users'], exclude_pk=True, exclude_underscore=True)
->>> user_dict
 {'password': 'x', 'role': {'description': None, 'permissions': [{'name': 'posts:r', 'id': 1}, {'name': 'posts:w', 'id': 2}], 'name': 'Moderator', 'id': 1}, 'username': 'yarbshk', 'id': 1}
 ```
 Great! Variable `user_dict` contains desirable value – dictionary.
 
 Suppose in other part of the application you need to **deserialize that dictionary** to be able to use all features of the User's model (e.g. calling methods, querying data):
 ```python
->>> dict2row(user_dict, User)
+>>> user_row = dict2row(user_dict, User)
 <User (transient 139927902911456)>
 ```
 The example above will create new instance of the User model (without any relations) to work with.
@@ -132,7 +131,7 @@ class User(db.Model):
 {'password': 'x', 'role': {'description': None, 'permissions': [], 'name': 'Moderator', 'id': 1}, 'username': 'yarbshk', 'id': 1}
 ```
 
-You can see an example of instantiating Flask + SQLAlchemy (with `DictionarySerializableModel`) in the `tests/main.py` file. 
+Follow the `tests/main.py` file to see the SQLAlchemy DST model in action.
 
 ## Copyright and License
 Copyright (c) 2018 Yuriy Rabeshko. Code released under the MIT license.
