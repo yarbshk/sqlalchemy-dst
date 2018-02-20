@@ -5,12 +5,14 @@ ATTR_DEPTH = '_sa_dst_depth'
 ATTR_EXCLUDE = '_sa_dst_exclude'
 ATTR_EXCLUDE_PK = '_sa_dst_exclude_pk'
 ATTR_EXCLUDE_UNDERSCORE = '_sa_dst_exclude_underscore'
+ATTR_ONLY = '_sa_dst_only'
 ATTR_REL = '_sa_dst_rel'
 
 DEFAULT_DEPTH = 1
 DEFAULT_EXCLUDE = set()
 DEFAULT_EXCLUDE_PK = False
 DEFAULT_EXCLUDE_UNDERSCORE = False
+DEFAULT_ONLY = set()
 DEFAULT_REL = dict()
 
 DEFAULT_FK_SUFFIX = '_id'
@@ -39,16 +41,23 @@ def get_backref(rel):
     if backref:
         return str(backref)
 
+check_only = lambda x, only: len(only) and x not in only
+check_exclude_pk = lambda x, exclude_pk: \
+    x.endswith(DEFAULT_FK_SUFFIX) and exclude_pk
+check_exclude_underscore = lambda x, exclude_underscore: \
+    x.startswith('_') and exclude_underscore
+
 def row2dict(row, depth=None, exclude=None, exclude_pk=None,
-             exclude_underscore=None):
+             exclude_underscore=None, only=None):
     """
     Recursively walk row attributes to serialize ones into a dict.
 
     :param row: instance of the declarative base class
     :param depth: number that represent the depth of related relationships
-    :param exclude: list of attributes names to exclude
+    :param exclude: set of attributes names to exclude
     :param exclude_pk: are foreign keys (e.g. fk_name_id) excluded
     :param exclude_underscore: are private and protected attributes excluded
+    :param only: set of attributes names to include
 
     :return: dict with attributes of current depth level
     """
@@ -66,13 +75,17 @@ def row2dict(row, depth=None, exclude=None, exclude_pk=None,
     if exclude_underscore is None:
         exclude_underscore = getattr(row, ATTR_EXCLUDE_UNDERSCORE,
                                      DEFAULT_EXCLUDE_UNDERSCORE)
+    if only is None:
+        only = getattr(row, ATTR_ONLY, DEFAULT_ONLY)
     for c in mapper.columns.keys() + mapper.synonyms.keys():
-        if (c.endswith(DEFAULT_FK_SUFFIX) and exclude_pk) or \
-                (c.startswith('_') and exclude_underscore) or c in exclude:
+        if c in exclude or \
+                check_exclude_pk(c, exclude_pk) or \
+                check_exclude_underscore(c, exclude_underscore) or \
+                check_only(c, only):
             continue
         d[c] = getattr(row, c)
     for r in mapper.relationships.keys():
-        if r in exclude:
+        if r in exclude or check_only(r, only):
             continue
         attr = getattr(row, r)
         backref = get_backref(mapper.relationships[r])
@@ -88,7 +101,7 @@ def row2dict(row, depth=None, exclude=None, exclude_pk=None,
     return d
 
 def dict2row(d, model, rel=None, exclude=None, exclude_pk=None,
-             exclude_underscore=None):
+             exclude_underscore=None, only=None):
     """
     Recursively walk dict attributes to serialize ones into a row.
 
@@ -98,6 +111,7 @@ def dict2row(d, model, rel=None, exclude=None, exclude_pk=None,
     :param exclude: list of attributes names to exclude
     :param exclude_pk: are foreign keys (e.g. fk_name_id) excluded
     :param exclude_underscore: are private and protected attributes excluded
+    :param only: set of attributes names to include
 
     :return: instance of the declarative base class
     """
@@ -115,14 +129,17 @@ def dict2row(d, model, rel=None, exclude=None, exclude_pk=None,
     if exclude_underscore is None:
         exclude_underscore = getattr(row, ATTR_EXCLUDE_UNDERSCORE,
                                      DEFAULT_EXCLUDE_UNDERSCORE)
+    if only is None:
+        only = getattr(row, ATTR_ONLY, DEFAULT_ONLY)
     for c in mapper.columns.keys() + mapper.synonyms.keys():
-        if (c.endswith(DEFAULT_FK_SUFFIX) and exclude_pk) or \
-                (c.startswith('_') and exclude_underscore) or \
-                (c in exclude) or (c not in d):
+        if c not in d or c in exclude or \
+                check_exclude_pk(c, exclude_pk) or \
+                check_exclude_underscore(c, exclude_underscore) or \
+                check_only(c, only):
             continue
         setattr(row, c, d[c])
     for r in mapper.relationships.keys():
-        if r not in d or r not in rel:
+        if r not in d or r not in rel or check_only(r, only):
             continue
         kwargs = dict(rel=rel, exclude=exclude, exclude_pk=exclude_pk,
                       exclude_underscore=exclude_underscore)

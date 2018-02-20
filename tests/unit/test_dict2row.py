@@ -47,6 +47,14 @@ class Dict2RowTest(TestCase):
                              exclude_underscore=True)
         self.assertIsNone(user_row2._secret)
 
+    def test_only(self):
+        user_row = dict2row(self.user_dict, User, rel={'role': Role},
+                            only={'id', 'role'})
+        self.assertEqual(user_row.id, self.user_dict['id'])
+        self.assertIsNone(user_row.username)
+        self.assertIsNone(user_row.password)
+        self.assertIsNotNone(user_row.role)
+
     def test_empty(self):
         with self.assertRaises(AttributeError):
             dict2row(self.user_dict, object)

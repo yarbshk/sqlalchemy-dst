@@ -44,6 +44,13 @@ class Row2DictTest(TestCase):
         user_dict2 = row2dict(self.user, exclude_underscore=True)
         self.assertNotIn('_secret', user_dict2)
 
+    def test_only(self):
+        user_dict = row2dict(self.user, depth=3, only={'id', 'username'})
+        self.assertDictEqual(user_dict, {
+            'id': self.user.id,
+            'username': self.user.username
+        })
+
     def test_empty(self):
         with self.assertRaises(AttributeError):
             row2dict(None)
