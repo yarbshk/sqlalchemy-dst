@@ -8,10 +8,10 @@ ATTR_EXCLUDE_UNDERSCORE = '_sa_dst_exclude_underscore'
 ATTR_REL = '_sa_dst_rel'
 
 DEFAULT_DEPTH = 1
-DEFAULT_EXCLUDE = []
+DEFAULT_EXCLUDE = set()
 DEFAULT_EXCLUDE_PK = False
 DEFAULT_EXCLUDE_UNDERSCORE = False
-DEFAULT_REL = {}
+DEFAULT_REL = dict()
 
 DEFAULT_FK_SUFFIX = '_id'
 
@@ -34,6 +34,11 @@ def get_mapper(row):
 
     return mapper
 
+def get_backref(rel):
+    backref = rel.backref or rel.back_populates
+    if backref:
+        return str(backref)
+
 def row2dict(row, depth=None, exclude=None, exclude_pk=None,
              exclude_underscore=None):
     """
@@ -50,11 +55,11 @@ def row2dict(row, depth=None, exclude=None, exclude_pk=None,
     if depth == 0:
         return None
     d, mapper = {}, get_mapper(row)
-    if not isinstance(depth, int):
+    if depth is None:
         depth = getattr(row, ATTR_DEPTH, DEFAULT_DEPTH) - 1
     else:
         depth -= 1
-    if not isinstance(exclude, list):
+    if exclude is None:
         exclude = getattr(row, ATTR_EXCLUDE, DEFAULT_EXCLUDE)
     if exclude_pk is None:
         exclude_pk = getattr(row, ATTR_EXCLUDE_PK, DEFAULT_EXCLUDE_PK)
@@ -70,6 +75,9 @@ def row2dict(row, depth=None, exclude=None, exclude_pk=None,
         if r in exclude:
             continue
         attr = getattr(row, r)
+        backref = get_backref(mapper.relationships[r])
+        if backref:
+            exclude.add(backref)
         kwargs = dict(depth=depth, exclude=exclude, exclude_pk=exclude_pk,
                       exclude_underscore=exclude_underscore)
         if isinstance(attr, collections.InstrumentedList):
@@ -98,9 +106,9 @@ def dict2row(d, model, rel=None, exclude=None, exclude_pk=None,
                         type(d).__name__)
     row = model()
     mapper = get_mapper(row)
-    if not isinstance(rel, dict):
+    if rel is None:
         rel = getattr(row, ATTR_REL, DEFAULT_REL)
-    if not isinstance(exclude, list):
+    if exclude is None:
         exclude = getattr(row, ATTR_EXCLUDE, DEFAULT_EXCLUDE)
     if exclude_pk is None:
         exclude_pk = getattr(row, ATTR_EXCLUDE_PK, DEFAULT_EXCLUDE_PK)

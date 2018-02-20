@@ -22,16 +22,11 @@ class Row2DictTest(TestCase):
         self.assertEqual(get_dict_depth(user_dict2), 3)
 
     def test_exclude(self):
-        # in
-        user_dict1 = row2dict(self.user, depth=3)
-        for permission in user_dict1['role']['permissions']:
-            self.assertIn('roles', permission)
-        self.assertIn('users', user_dict1['role'])
-        # not in
-        user_dict2 = row2dict(self.user, depth=3, exclude=['roles', 'users'])
-        for permission in user_dict2['role']['permissions']:
+        user_dict = row2dict(self.user, depth=3, exclude={'username'})
+        self.assertNotIn('username', user_dict)
+        self.assertNotIn('users', user_dict['role'])
+        for permission in user_dict['role']['permissions']:
             self.assertNotIn('roles', permission)
-        self.assertNotIn('users', user_dict2['role'])
 
     def test_exclude_pk(self):
         # in

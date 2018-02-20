@@ -6,7 +6,7 @@ from tests.test import TestCase
 class Dict2RowTest(TestCase):
     @property
     def user_dict(self):
-        return row2dict(self.user, depth=3, exclude=['roles', 'users'])
+        return row2dict(self.user, depth=3)
 
     def test_default(self):
         user_row = dict2row(self.user_dict, User)
@@ -27,7 +27,7 @@ class Dict2RowTest(TestCase):
         user_row1 = dict2row(self.user_dict, User)
         self.assertIsNotNone(user_row1.username)
         # not in
-        user_row2 = dict2row(self.user_dict, User, exclude=['username'])
+        user_row2 = dict2row(self.user_dict, User, exclude={'username'})
         self.assertIsNone(user_row2.username)
 
     def test_exclude_pk(self):
@@ -43,7 +43,7 @@ class Dict2RowTest(TestCase):
         user_row1 = dict2row(self.user_dict, User)
         self.assertIsNotNone(user_row1._secret)
         # not in
-        user_row2 = dict2row(self.user_dict, User, exclude=['password'],
+        user_row2 = dict2row(self.user_dict, User, exclude={'password'},
                              exclude_underscore=True)
         self.assertIsNone(user_row2._secret)
 
