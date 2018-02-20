@@ -7,6 +7,7 @@ ATTR_EXCLUDE_PK = '_sa_dst_exclude_pk'
 ATTR_EXCLUDE_UNDERSCORE = '_sa_dst_exclude_underscore'
 ATTR_ONLY = '_sa_dst_only'
 ATTR_REL = '_sa_dst_rel'
+ATTR_FK_SUFFIX = '_sa_dst_fk_suffix'
 
 DEFAULT_DEPTH = 1
 DEFAULT_EXCLUDE = set()
@@ -14,7 +15,6 @@ DEFAULT_EXCLUDE_PK = False
 DEFAULT_EXCLUDE_UNDERSCORE = False
 DEFAULT_ONLY = set()
 DEFAULT_REL = dict()
-
 DEFAULT_FK_SUFFIX = '_id'
 
 
@@ -41,14 +41,17 @@ def get_backref(rel):
     if backref:
         return str(backref)
 
+def get_fk_suffix(row):
+    return getattr(row, ATTR_EXCLUDE_PK, DEFAULT_EXCLUDE_PK)
+
 check_only = lambda x, only: len(only) and x not in only
-check_exclude_pk = lambda x, exclude_pk: \
-    x.endswith(DEFAULT_FK_SUFFIX) and exclude_pk
+check_exclude_pk = lambda x, exclude_pk, fk_suffix='': \
+    x.endswith(fk_suffix) and exclude_pk
 check_exclude_underscore = lambda x, exclude_underscore: \
     x.startswith('_') and exclude_underscore
 
 def row2dict(row, depth=None, exclude=None, exclude_pk=None,
-             exclude_underscore=None, only=None):
+             exclude_underscore=None, only=None, fk_suffix=None):
     """
     Recursively walk row attributes to serialize ones into a dict.
 
@@ -58,6 +61,7 @@ def row2dict(row, depth=None, exclude=None, exclude_pk=None,
     :param exclude_pk: are foreign keys (e.g. fk_name_id) excluded
     :param exclude_underscore: are private and protected attributes excluded
     :param only: set of attributes names to include
+    :param fk_suffix: str that represent a foreign key suffix
 
     :return: dict with attributes of current depth level
     """
@@ -77,9 +81,11 @@ def row2dict(row, depth=None, exclude=None, exclude_pk=None,
                                      DEFAULT_EXCLUDE_UNDERSCORE)
     if only is None:
         only = getattr(row, ATTR_ONLY, DEFAULT_ONLY)
+    if fk_suffix is None:
+        fk_suffix = getattr(row, ATTR_FK_SUFFIX, DEFAULT_FK_SUFFIX)
     for c in mapper.columns.keys() + mapper.synonyms.keys():
         if c in exclude or \
-                check_exclude_pk(c, exclude_pk) or \
+                check_exclude_pk(c, exclude_pk, fk_suffix=fk_suffix) or \
                 check_exclude_underscore(c, exclude_underscore) or \
                 check_only(c, only):
             continue
@@ -101,17 +107,18 @@ def row2dict(row, depth=None, exclude=None, exclude_pk=None,
     return d
 
 def dict2row(d, model, rel=None, exclude=None, exclude_pk=None,
-             exclude_underscore=None, only=None):
+             exclude_underscore=None, only=None, fk_suffix=None):
     """
     Recursively walk dict attributes to serialize ones into a row.
 
-    :param d: dict which represent a serialized row
+    :param d: dict that represent a serialized row
     :param model: class nested from the declarative base class
     :param rel: dict of key (relationship name) -value (class) pairs
-    :param exclude: list of attributes names to exclude
+    :param exclude: set of attributes names to exclude
     :param exclude_pk: are foreign keys (e.g. fk_name_id) excluded
     :param exclude_underscore: are private and protected attributes excluded
     :param only: set of attributes names to include
+    :param fk_suffix: str that represent a foreign key suffix
 
     :return: instance of the declarative base class
     """
@@ -131,9 +138,11 @@ def dict2row(d, model, rel=None, exclude=None, exclude_pk=None,
                                      DEFAULT_EXCLUDE_UNDERSCORE)
     if only is None:
         only = getattr(row, ATTR_ONLY, DEFAULT_ONLY)
+    if fk_suffix is None:
+        fk_suffix = getattr(row, ATTR_FK_SUFFIX, DEFAULT_FK_SUFFIX)
     for c in mapper.columns.keys() + mapper.synonyms.keys():
         if c not in d or c in exclude or \
-                check_exclude_pk(c, exclude_pk) or \
+                check_exclude_pk(c, exclude_pk, fk_suffix=fk_suffix) or \
                 check_exclude_underscore(c, exclude_underscore) or \
                 check_only(c, only):
             continue
@@ -150,7 +159,7 @@ def dict2row(d, model, rel=None, exclude=None, exclude_pk=None,
         else:
             if not exclude_pk:
                 rpk = d[r].get('id') if isinstance(d[r], dict) else None
-                setattr(row, r + DEFAULT_FK_SUFFIX, rpk)
+                setattr(row, r + fk_suffix, rpk)
             setattr(row, r, dict2row(d[r], rel[r], **kwargs))
 
     return row

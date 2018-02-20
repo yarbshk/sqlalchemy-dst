@@ -55,6 +55,11 @@ class Dict2RowTest(TestCase):
         self.assertIsNone(user_row.password)
         self.assertIsNotNone(user_row.role)
 
+    def test_fk_suffix(self):
+        user_row = dict2row(self.user_dict, User, rel={'role': Role},
+                            fk_suffix='x')
+        self.assertTrue(hasattr(user_row, 'rolex'))
+
     def test_empty(self):
         with self.assertRaises(AttributeError):
             dict2row(self.user_dict, object)
