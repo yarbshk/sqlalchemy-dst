@@ -98,7 +98,8 @@ def row2dict(row, depth=None, exclude=None, exclude_pk=None,
         if backref:
             exclude.add(backref)
         kwargs = dict(depth=depth, exclude=exclude, exclude_pk=exclude_pk,
-                      exclude_underscore=exclude_underscore)
+                      exclude_underscore=exclude_underscore, only=only,
+                      fk_suffix=fk_suffix)
         if isinstance(attr, collections.InstrumentedList):
             d[r] = [row2dict(i, **kwargs) for i in attr if depth]
         else:
@@ -151,7 +152,8 @@ def dict2row(d, model, rel=None, exclude=None, exclude_pk=None,
         if r not in d or r not in rel or check_only(r, only):
             continue
         kwargs = dict(rel=rel, exclude=exclude, exclude_pk=exclude_pk,
-                      exclude_underscore=exclude_underscore)
+                      exclude_underscore=exclude_underscore, only=only,
+                      fk_suffix=fk_suffix)
         if isinstance(d[r], list):
             setattr(row, r, collections.InstrumentedList())
             for i in d[r]:
