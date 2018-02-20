@@ -4,7 +4,7 @@ setup(
     name='sqlalchemy-dst',
     description='SQLAlchemy Dictionary Serialization Tools.',
     keywords='sqlalchemy python dict serialize tool',
-    version='1.0.0',
+    version='1.0.1',
     url='https://github.com/yarbshk/sqlalchemy-dst',
     author='Yuriy Rabeshko',
     author_email='george.rabeshko@gmail.com',
