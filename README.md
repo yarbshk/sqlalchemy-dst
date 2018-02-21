@@ -36,9 +36,9 @@ Serialize the instance of the User model into the one-dimensional dictionary:
 Serialize the instance of the User model into the three-dimensional dictionary and exclude a few attributes using different methods:
 ```python
 
->>> row2dict(user, depth=3, exclude_pk=True, exclude_underscore=True)
-{'username': 'yarbshk', 'password': 'x', 'id': 1, 'role': {'description': None, 'id': 1, 'permissions': [{'id': 1, 'name': 'posts:r'}, {'id': 2, 'name': 'posts:w'}], 'name': 'Moderator'}}
 >>> row2dict(user, depth=3, exclude={'role_id', '_secret'})
+{'username': 'yarbshk', 'password': 'x', 'id': 1, 'role': {'description': None, 'id': 1, 'permissions': [{'id': 1, 'name': 'posts:r'}, {'id': 2, 'name': 'posts:w'}], 'name': 'Moderator'}}
+>>> row2dict(user, depth=3, exclude_pk=True, exclude_underscore=True)
 {'username': 'yarbshk', 'password': 'x', 'id': 1, 'role': {'description': None, 'id': 1, 'permissions': [{'id': 1, 'name': 'posts:r'}, {'id': 2, 'name': 'posts:w'}], 'name': 'Moderator'}}
 
 ```
@@ -67,14 +67,12 @@ Well, now you are able to do any manipulations with this instance in the same wa
 
 Awesome, isn't it? :)
 
-Arguments of the `dict2row()` method which left unnoticed (_exclude_, _exclude_pk_, _exclude_underscore_) works as same as in the `row2dict()` method.
-
 ## Pay attention
 
 If you want to exclude some attribute of model which has synonym (and vice versa) you MUST exclude both attribute and synonym (in other case SQLAlchemy automatically sets the same value for attribute and their synonym even if one of them is excluded):
 
 ```python
->>> dict2row(user_dict, User, exclude={'attr', 'synonym'})
+>>> dict2row(user_dict, User, exclude={'_secret', 'password'})
 ```
 
 ## Documentation
@@ -99,7 +97,7 @@ Recursively walk dict attributes to serialize ones into a row.
 
 - **d** (required) – _dict_ which represent a serialized row.
 - **model** (required) – _class_ nested from the declarative base class.
-- **rel** (optional, default: `{}`) – _dict_ of key (relationship name) -value (class) pairs.
+- **rel** (optional, default: `dict()`) – _dict_ of key (relationship name) -value (class) pairs.
 - **exclude** (optional, default: `set()`) – _set_ of attributes names to exclude.
 - **exclude_pk** (optional, default: `False`) – _are_ foreign keys (e.g. fk_name_id) excluded.
 - **exclude_underscore** (optional, default: `False`) – _are_ private and protected attributes excluded.
@@ -116,7 +114,7 @@ Class that extends serialization functionality of your models.
 
 Use it as a base class for the `sqlalchemy.ext.declarative_base()` method (try to explore the `cls` argument in depth).
 
-If you decide to use the `DictionarySerializableModel` class as a base model, you may keep frequently used arguments values of the serialization methods in your model(s). Just set some or all of the following attributes in your model(s) as follows in example:
+If you decide to use the `DictionarySerializableModel` class as a base model, you may keep frequently used arguments values of the serialization methods in your model(s). Just set necessary **configuraion attributes** in your model(s) as follows:
 
 ```python
 from tests.main import db
@@ -135,21 +133,21 @@ The class declaration above is equal to calling the following method:
 {'username': 'yarbshk', 'id': 1, 'password': 'x', 'role': None}
 ``` 
 
-We're calling the method below without parameters, because configuration attributes with prefix `_sa_dst_` are set in the model above:
+After, we're simply calling the method below without any parameters, because configuration attributes already are set in the model above:
 
 ```python
->>> user.as_dict() # analog of row2dict(user, exclude_pk=True, exclude_underscore=True)
+>>> user.as_dict()
 {'username': 'yarbshk', 'id': 1, 'password': 'x', 'role': None}
 ```
 
-The following **configuration attributes** are available in models:
-* **_sa_dst_depth**
-* **_sa_dst_exclude**
-* **_sa_dst_exclude_pk**
-* **_sa_dst_exclude_underscore**
-* **_sa_dst_only**
-* **_sa_dst_rel**
-* **_sa_dst_fk_suffix**
+The list of available **configuration attributes**:
+* _sa_dst_depth
+* _sa_dst_exclude
+* _sa_dst_exclude_pk
+* _sa_dst_exclude_underscore
+* _sa_dst_only
+* _sa_dst_rel
+* _sa_dst_fk_suffix
 
 You can see an example of instantiating Flask + SQLAlchemy with `DictionarySerializableModel` in the `tests/main.py` file. 
 
